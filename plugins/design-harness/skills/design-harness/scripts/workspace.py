@@ -82,8 +82,10 @@ def card_files(workspace, layers=LAYERS):
         yield md, rel
 
 
-def card_links(md, rel, workspace, known):
-    for raw in _MD_LINK.findall(md.read_text(encoding="utf-8")):
+def card_links(md, rel, workspace, known, text=None):
+    """提取本地markdown链接。text参数可传入已读取的内容，避免重复IO。"""
+    content = text if text is not None else md.read_text(encoding="utf-8")
+    for raw in _MD_LINK.findall(content):
         if _EXTERNAL.match(raw):
             continue
         target = (md.parent / raw).resolve()

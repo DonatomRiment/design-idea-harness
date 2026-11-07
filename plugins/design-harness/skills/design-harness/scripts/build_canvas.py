@@ -40,7 +40,7 @@ def collect(workspace):
             "summary": first_paragraph(text),
             "body": strip_frontmatter(text).strip(),
         })
-        for target in dict.fromkeys(card_links(md, rel, workspace, cards)):
+        for target in dict.fromkeys(card_links(md, rel, workspace, cards, text)):
             if target != rel:
                 edges.append({"from": rel, "to": target})
         if parts[0] == "ideas":
