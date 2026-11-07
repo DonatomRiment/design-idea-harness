@@ -204,6 +204,11 @@ def check_canvas_css(rel, text):
     else:
         problems += [f"{rel}: dark palette missing canonical token: --{token}"
                      for token in CANONICAL_TOKENS if token not in dark_tokens]
+    # 额外安全检查：CSS 中的 @import 和 url() 不能指向外部资源（已由 FORBIDDEN_REACH 覆盖），
+    # 但我们也警告多个 @import 可能造成性能问题
+    import_count = text.count("@import")
+    if import_count > 0:
+        problems.append(f"{rel}: contains @import (consider inlining for performance)")
     return problems
 
 
