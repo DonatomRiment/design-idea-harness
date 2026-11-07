@@ -204,8 +204,13 @@ def build(workspace, outdir, css=None, title=None):
         "labels": labels, "worlds": worlds,
         "output": data["output"], "board": data["board"],
     }
-    needs_mermaid = any("```mermaid" in t for t in
-                        list(data["output"].values()) + list(data["board"].values()))
+    # 检查所有 markdown 内容中的 mermaid 代码块
+    all_markdown_text = (
+        list(data["output"].values())
+        + list(data["board"].values())
+        + [p.get("body", "") for p in placed]
+    )
+    needs_mermaid = any("```mermaid" in t for t in all_markdown_text)
     css_file = Path(css).resolve() if css else DEFAULT_CSS
     skins = None if css else style_pack_skins()
     html = (TEMPLATE.read_text(encoding="utf-8")
