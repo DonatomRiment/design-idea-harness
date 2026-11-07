@@ -24,7 +24,13 @@ def parse_frontmatter(text):
         elif ":" in line and not line.startswith((" ", "\t")):
             key, _, value = line.partition(":")
             key = key.strip()
-            fields[key] = value.strip()
+            value = value.strip()
+            # 去引号：支持 "val:ue" 或 'val:ue' 形式，让内部冒号保留
+            if len(value) >= 2:
+                first, last = value[0], value[-1]
+                if first == last and first in ("'", '"'):
+                    value = value[1:-1]
+            fields[key] = value
             pending = None if fields[key] else key
         else:
             pending = None
