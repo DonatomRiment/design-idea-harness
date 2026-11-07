@@ -156,9 +156,14 @@ def doc_edges(data, node_ids):
 
 
 def embed_json(data):
-    return json.dumps(data, ensure_ascii=False).replace("<", "\\u003c")
-
-
+    """JSON → JS安全字符串，转义所有HTML特殊字符防止XSS。"""
+    safe = json.dumps(data, ensure_ascii=False)
+    safe = safe.replace("<", "\\u003c")
+    safe = safe.replace(">", "\\u003e")
+    safe = safe.replace("&", "\\u0026")
+    safe = safe.replace("'", "\\u0027")
+    safe = safe.replace('"', '\"')
+    return safe
 def style_pack_skins():
     index = json.loads((STYLE_PACK / "selection-index.json").read_text(encoding="utf-8"))
     options, sheets = [], {}
