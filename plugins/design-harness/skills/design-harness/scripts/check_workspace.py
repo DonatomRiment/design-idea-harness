@@ -90,31 +90,38 @@ def board_inbound_problems(workspace):
 
 
 def cycle_problems(workspace):
+    """用迭代DFS替代递归，避免大图上栈溢出。"""
     workspace = Path(workspace).resolve()
     cards = {str(rel): md for md, rel in card_files(workspace)}
     graph = {rel: sorted(set(card_links(md, rel, workspace, cards)))
              for rel, md in cards.items()}
-    problems, done, stack, path = [], set(), set(), []
+    problems, done = [], set()
 
-    def visit(node):
-        if node in done:
-            return
-        stack.add(node)
-        path.append(node)
-        for target in graph[node]:
-            if target == node:
-                problems.append(f"reference cycle: {node} links itself")
-            elif target in stack:
-                loop = path[path.index(target):] + [target]
-                problems.append(f"reference cycle: {' -> '.join(loop)}")
-            else:
-                visit(target)
-        path.pop()
-        stack.discard(node)
-        done.add(node)
-
-    for node in sorted(graph):
-        visit(node)
+    for start in sorted(graph):
+        if start in done:
+            continue
+        # 迭代 DFS: stack 存 (node, iter(graph[node]))
+        stack = [(start, iter(graph[start]))]
+        path_stack = [start]  # 当前DFS路径（含已完成节点）
+        done.add(start)
+        
+        while stack:
+            node, neighbors = stack[-1]
+            try:
+                target = next(neighbors)
+                if target == node:
+                    problems.append(f"reference cycle: {node} links itself")
+                elif target in path_stack:
+                    idx = path_stack.index(target)
+                    loop = path_stack[idx:] + [target]
+                    problems.append(f"reference cycle: {' -> '.join(loop)}")
+                elif target not in done:
+                    done.add(target)
+                    path_stack.append(target)
+                    stack.append((target, iter(graph.get(target, []))))
+            except StopIteration:
+                path_stack.pop()
+                stack.pop()
     return problems
 
 
