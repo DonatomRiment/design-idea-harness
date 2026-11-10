@@ -179,13 +179,16 @@ def style_pack_skins():
 
 
 def validate_or_refuse(workspace):
+    workspace = Path(workspace).resolve()
     problems = ([f"INVALID {p}" for p in check(workspace)]
                 + [f"DANGLING {p}" for p in check_links(workspace)])
     if problems:
         for problem in problems:
-            print(problem)
+            # 将绝对路径转为相对路径，避免泄露文件系统结构
+            safe_problem = problem.replace(str(workspace) + "/", "")
+            print(safe_problem)
         raise ValueError(
-            f"{len(problems)} problem(s) in {workspace} — broken truth is never "
+            f"{len(problems)} problem(s) — broken truth is never "
             f"projected; fix the cards, then rebuild")
 
 
